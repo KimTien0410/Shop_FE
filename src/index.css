@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+.full-width-swiper {
+    width: 100vw; /* Chiều rộng toàn màn hình */
+    margin-left: calc(-50vw + 50%); /* Căn giữa */
+  }
