@@ -19,7 +19,7 @@ import AddressPage from "../pages/AddressPage";
 import CheckoutPage from "../pages/CheckoutPage";
 import OrderHistoryPage from "../pages/OrderHistoryPage";
 import AdminLayout from "../layouts/AdminLayout";
-import Dashboard from "../pages/admin/dashboard";
+import Dashboard from "../pages/admin/Dashboard";
 import ManageCategory from "../pages/admin/ManageCategory";
 import ManageBrand from "../pages/admin/ManageBrand";
 import ManageUser from "../pages/admin/ManageUser";
