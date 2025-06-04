@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosPrivate = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: "https://shop-be-1.onrender.com/api",
 });
 // Interceptor để thêm token vào header khi có request
 axiosPrivate.interceptors.request.use((config) => {

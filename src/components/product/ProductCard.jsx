@@ -18,7 +18,10 @@ export default function ProductCard({ product }) {
       cover={
         <img
           alt={product.productName}
-          src={product.thumbnail}
+          src={
+            product.thumbnail ||
+            "https://js0fpsb45jobj.vcdn.cloud/storage/upload/media/gumac3/ple11074/2-be-ple11074-1.jpg"
+          }
           onClick={handleNavigate}
           className="w-full h-50  rounded-lg"
         />

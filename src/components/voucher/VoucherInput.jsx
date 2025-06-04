@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Select, Button, message, Tag } from "antd";
+import { Select, Button,Tag } from "antd";
 import { getVoucherActive } from "../../services/voucherService";
+import { toast } from "react-toastify";
 
-export default function VoucherInput({ orderTotal, onApplyVoucher }) {
+export default function VoucherInput({ orderTotal, onApplyVoucher, selectedVoucher }) {
   const [vouchers, setVouchers] = useState([]);
-  const [selectedVoucher, setSelectedVoucher] = useState(null);
+  // const [selectedVoucher, setSelectedVoucher] = useState(null);
 
   useEffect(() => {
     const fetchVouchers = async () => {
@@ -20,34 +21,30 @@ export default function VoucherInput({ orderTotal, onApplyVoucher }) {
         );
         setVouchers(validVouchers);
       } catch {
-        message.error("Không thể tải voucher!");
+       toast.error("Không thể tải voucher!");
       }
     };
     fetchVouchers();
   }, []);
 
-  const handleApply = () => {
-    if (!selectedVoucher) {
-      message.warning("Vui lòng chọn voucher!");
-      return;
-    }
-    // Kiểm tra điều kiện áp dụng
+  const handleApply = (id) => {
+    const voucher = vouchers.find((v) => v.voucherId === id);
+    if (!voucher) return;
     if (
-      orderTotal < selectedVoucher.minOrderValue ||
-      (selectedVoucher.maxOrderValue &&
-        orderTotal > selectedVoucher.maxOrderValue)
+      orderTotal < voucher.minOrderValue ||
+      (voucher.maxOrderValue && orderTotal > voucher.maxOrderValue)
     ) {
-      message.error("Đơn hàng không đủ điều kiện áp dụng voucher này!");
+      toast.error("Đơn hàng không đủ điều kiện áp dụng voucher này!");
       return;
     }
-    onApplyVoucher(selectedVoucher);
-    message.success("Áp dụng voucher thành công!");
+    onApplyVoucher(voucher);
+    toast.success("Áp dụng voucher thành công!");
   };
 
+
   const handleRemove = () => {
-    setSelectedVoucher(null);
     onApplyVoucher(null);
-    message.info("Đã bỏ áp dụng voucher.");
+    toast.info("Đã bỏ áp dụng voucher.");
   };
 
   return (
@@ -58,10 +55,7 @@ export default function VoucherInput({ orderTotal, onApplyVoucher }) {
         placeholder="Chọn voucher"
         optionFilterProp="children"
         value={selectedVoucher?.voucherId}
-        onChange={(id) => {
-          const v = vouchers.find((v) => v.voucherId === id);
-          setSelectedVoucher(v);
-        }}
+        onChange={handleApply}
         filterOption={(input, option) =>
           (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
         }
@@ -78,15 +72,16 @@ export default function VoucherInput({ orderTotal, onApplyVoucher }) {
           </Select.Option>
         ))}
       </Select>
-      {!selectedVoucher ? (
-        <Button type="primary" onClick={handleApply}>
-          Áp dụng
-        </Button>
-      ) : (
+      {!selectedVoucher ? null : (
         <Button danger onClick={handleRemove}>
           Bỏ áp dụng
         </Button>
       )}
+      {/* {!selectedVoucher ? null : (
+        <Button danger onClick={handleRemove}>
+          Bỏ áp dụng
+        </Button>
+      )} */}
       {selectedVoucher && (
         <span className="ml-2 text-green-600">
           Đã áp dụng: <b>{selectedVoucher.voucherCode}</b>

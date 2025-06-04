@@ -168,20 +168,22 @@ export default function AddressPage() {
     }
   };
   return (
-    <Layout className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg">
+    <Layout className=" max-w-7xl mx-auto bg-white shadow-lg rounded-lg">
       <Sidebar selectedKey="/address" />
       <Layout style={{ padding: "24px" }}>
         <Content>
-          <h1 className="text-3xl font-semibold mb-8 text-center text-gray-800">
-            Địa chỉ nhận hàng
-          </h1>
-          <Button
-            type="primary"
-            onClick={() => setIsModalVisible(true)}
-            className="mb-4"
-          >
-            Thêm địa chỉ
-          </Button>
+          <div className=" flex justify-between">
+            <h1 className="text-3xl font-semibold mb-8 text-center text-gray-800">
+              Địa chỉ nhận hàng
+            </h1>
+            <Button
+              type="primary"
+              onClick={() => setIsModalVisible(true)}
+              className="mb-4"
+            >
+              Thêm địa chỉ
+            </Button>
+          </div>
           <div>
             <div>
               {addresses && addresses.length > 0 ? (

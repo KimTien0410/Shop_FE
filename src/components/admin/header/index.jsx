@@ -37,18 +37,7 @@ export default function HeaderAdmin() {
       <div className="text-xl font-bold text-blue-600">Admin Dashboard</div>
 
       {/* Search */}
-      {/* <div className="flex items-center gap-2">
-        <Input
-          placeholder="Tìm kiếm..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onPressEnter={handleSearch}
-          style={{ width: 300 }}
-        />
-        <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
-          Tìm
-        </Button>
-      </div> */}
+      
 
       {/* Account */}
       {auth.isAuthenticated && (
@@ -58,7 +47,6 @@ export default function HeaderAdmin() {
           </Button>
         </Dropdown>
       )}
-      
     </header>
   );
 }

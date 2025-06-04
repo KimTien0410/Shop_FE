@@ -25,9 +25,9 @@ export const updateProfile = async (formData) => {
 }
 
 
-export const getUsers = async (page, size) => {
+export const getUsers = async (search,page, size) => {
     const response = await axiosPrivate.get(
-      `users/by-role?roleName=USER&page=${page}&size=${size}`
+      `users/by-role?roleName=USER&search=${search}&page=${page}&size=${size}`
     );
     console.log("Response user data:", response.data); // Log the response data
   return response.data;

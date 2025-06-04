@@ -14,6 +14,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   UndoOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import {
   getBrands,
@@ -29,6 +30,7 @@ export default function ManageBrand() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingBrand, setEditingBrand] = useState(null);
   const [form] = Form.useForm();
+  const [searchQuery, setSearchQuery] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
@@ -36,12 +38,12 @@ export default function ManageBrand() {
   });
 
   useEffect(() => {
-    fetchBrands(pagination.current, pagination.pageSize);
+    fetchBrands(searchQuery, pagination.current, pagination.pageSize);
   }, [pagination.current, pagination.pageSize]);
 
-  const fetchBrands = async (page, size) => {
+  const fetchBrands = async (search="",page, size) => {
     try {
-      const response = await getBrands(page - 1, size); // Đảm bảo API sử dụng page bắt đầu từ 0
+      const response = await getBrands(search, page - 1, size); // Đảm bảo API sử dụng page bắt đầu từ 0
       if (response.data && response.data.content) {
         setBrands(response.data.content);
         setPagination((prev) => ({
@@ -56,7 +58,10 @@ export default function ManageBrand() {
       toast.error("Không thể tải danh sách thương hiệu!");
     }
   };
-
+  const handleSearch = () => {
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    fetchBrands(searchQuery, 1, pagination.pageSize);
+  };
   const handleAddBrand = () => {
     setEditingBrand(null);
     form.resetFields();
@@ -73,7 +78,7 @@ export default function ManageBrand() {
     try {
       await deleteBrand(brandId);
       toast.success("Xóa thương hiệu thành công!");
-      fetchBrands(pagination.current, pagination.pageSize);
+      fetchBrands("",pagination.current, pagination.pageSize);
     } catch (error) {
       console.error("Error deleting brand:", error);
       toast.error("Không thể xóa thương hiệu!");
@@ -84,7 +89,7 @@ export default function ManageBrand() {
     try {
       await restoreBrand(brandId);
       toast.success("Khôi phục thương hiệu thành công!");
-      fetchBrands(pagination.current, pagination.pageSize);
+      fetchBrands("",pagination.current, pagination.pageSize);
     } catch (error) {
       console.error("Error restoring brand:", error);
       toast.error("Không thể khôi phục thương hiệu!");
@@ -216,6 +221,22 @@ export default function ManageBrand() {
     <div>
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold mb-4">Quản lý thương hiệu</h1>
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Tìm kiếm..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onPressEnter={handleSearch}
+            style={{ width: 300 }}
+          />
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={handleSearch}
+          >
+            Tìm
+          </Button>
+        </div>
         <Button
           type="primary"
           onClick={handleAddBrand}

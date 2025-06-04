@@ -17,6 +17,7 @@ import {
   DeleteOutlined,
   UndoOutlined,
   UploadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import {
   getProducts,
@@ -33,16 +34,17 @@ export default function ManageProduct() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [form] = Form.useForm();
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 5,
-    total: 0,
-  });
+  const [searchQuery, setSearchQuery] = useState("");
+    const [pagination, setPagination] = useState({
+      current: 1,
+      pageSize: 5,
+      total: 0,
+    });
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
   useEffect(() => {
-    fetchProducts(pagination.current, pagination.pageSize);
-  }, [pagination.current, pagination.pageSize]);
+    fetchProducts(searchQuery, pagination.current, pagination.pageSize);
+  }, [searchQuery, pagination.current, pagination.pageSize]);
   useEffect(() => {
     if (isModalVisible) {
       fetchBrands();
@@ -93,9 +95,9 @@ export default function ManageProduct() {
       toast.error("Không thể tải danh sách danh mục!");
     }
   };
-  const fetchProducts = async (page = 1, pageSize = 5) => {
+  const fetchProducts = async (search = "", page = 1, pageSize = 5) => {
     try {
-      const response = await getProducts(page - 1, pageSize); // API sử dụng page bắt đầu từ 0
+      const response = await getProducts(search, page - 1, pageSize); // API sử dụng page bắt đầu từ 0
       setProducts(response.data.content); // Gán danh sách sản phẩm
       setPagination((prev) => ({
         ...prev,
@@ -108,7 +110,10 @@ export default function ManageProduct() {
       toast.error("Không thể tải danh sách sản phẩm!");
     }
   };
-
+  const handleSearch = () => {
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    fetchProducts(searchQuery, 1, pagination.pageSize);
+  };
   const handleAddProduct = () => {
     setEditingProduct(null);
     form.resetFields();
@@ -321,6 +326,22 @@ export default function ManageProduct() {
     <div>
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold mb-4">Quản lý sản phẩm</h1>
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Tìm kiếm..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onPressEnter={handleSearch}
+            style={{ width: 300 }}
+          />
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={handleSearch}
+          >
+            Tìm
+          </Button>
+        </div>
         <Button
           type="primary"
           onClick={handleAddProduct}
@@ -328,7 +349,6 @@ export default function ManageProduct() {
           icon={<PlusOutlined style={{ fontSize: "18px" }} />}
           shape="circle"
         />
-         
       </div>
       <Table
         columns={columns}
@@ -339,7 +359,7 @@ export default function ManageProduct() {
           pageSize: pagination.pageSize,
           total: pagination.total,
           onChange: (page, pageSize) => {
-            fetchProducts(page, pageSize); // Gọi lại API khi thay đổi trang
+            fetchProducts(searchQuery, page, pageSize); // Gọi lại API khi thay đổi trang
           },
         }}
       />

@@ -76,7 +76,7 @@ export default function Header() {
         {/* Menu khu vực giữa */}
         <div className="flex-1 justify-between space-x-4">
           {/* Danh mục cha hiển thị ngang */}
-          <Menu mode="horizontal">
+          {/* <Menu mode="horizontal">
             {categories.map((category) => (
               <Menu.SubMenu
                 key={category.categoryId}
@@ -92,7 +92,19 @@ export default function Header() {
                 ))}
               </Menu.SubMenu>
             ))}
-          </Menu>
+          </Menu> */}
+          <Menu
+            mode="horizontal"
+            items={categories.map((category) => ({
+              key: category.categoryId,
+              label: category.categoryName,
+              children: category.children?.map((child) => ({
+                key: child.categoryId,
+                label: child.categoryName,
+                onClick: () => handleCategoryClick(child.categoryId),
+              })),
+            }))}
+          />
         </div>
 
         {/* Search */}

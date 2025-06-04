@@ -36,22 +36,62 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Đăng nhập
+  // const loginResponse = async (loginForm) => {
+  //   try {
+  //     const res = await login(loginForm);
+  //   // console.log(res.data.token);
+  //   const token = res.data.token;
+  //   localStorage.setItem("token", token);
+
+  //   const decoded = jwtDecode(token);
+
+  //   const newAuth = {
+  //     token,
+  //     email: decoded.sub,
+  //     role: extractRoleFromScope(decoded.scope),
+  //     isAuthenticated: true,
+  //   };
+  //   setAuth(newAuth);
+  //   return newAuth;
+  //   }
+  //   catch (error) {
+  //     console.error("Login failed:", error);
+  //     throw error; // Ném lỗi để xử lý ở nơi gọi
+  //   }
+    
+  // };
   const loginResponse = async (loginForm) => {
-    const res = await login(loginForm);
-    // console.log(res.data.token);
-    const token = res.data.token;
-    localStorage.setItem("token", token);
+    try {
+      const res = await login(loginForm);
+      const token = res.data.token;
+      localStorage.setItem("token", token);
 
-    const decoded = jwtDecode(token);
+      const decoded = jwtDecode(token);
 
-    const newAuth = {
-      token,
-      email: decoded.sub,
-      role: extractRoleFromScope(decoded.scope),
-      isAuthenticated: true,
-    };
-    setAuth(newAuth);
-    return newAuth;
+      const newAuth = {
+        token,
+        email: decoded.sub,
+        role: extractRoleFromScope(decoded.scope),
+        isAuthenticated: true,
+      };
+      setAuth(newAuth);
+      return {
+        success: true,
+        auth: newAuth,
+        message: "Đăng nhập thành công",
+      };
+    } catch (error) {
+      // Lấy message từ backend nếu có
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Đăng nhập thất bại!";
+      return {
+        success: false,
+        auth: null,
+        message,
+      };
+    }
   };
 const extractRoleFromScope = (scope) => {
   if (scope.includes("ROLE_ADMIN")) {

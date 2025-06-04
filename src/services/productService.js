@@ -93,9 +93,9 @@ export const getProductById = async (productId) => {
 
 import axiosPrivate from "../config/axiosPrivate";
 
-export const getProducts = async (page, size) => {
-    const response = await axiosPrivate.get(`/products/admin?page=${page}&size=${size}`);
-    
+export const getProducts = async (search,page, size) => {
+    const response = await axiosPrivate.get(`/products/admin?search=${search}&page=${page}&size=${size}`);
+
     return response.data;
 };
 

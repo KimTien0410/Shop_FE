@@ -27,8 +27,9 @@ export const getCategoryById = async (categoryId) => {
     }
 }
 export const getAllCategoriesByAdmin = async () => {
+    let response;
     try {
-        const response = await axiosPrivate.get("/categories/admin/getAll");
+        response = await axiosPrivate.get(`/categories/admin/getAll`);
         console.log("categories", response); // Log the response data
         if (response.status === 200) {
             return response.data.data;

@@ -13,6 +13,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   UndoOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import {
   getUsers,
@@ -27,6 +28,7 @@ export default function ManageUser() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [form] = Form.useForm();
+   const [searchQuery, setSearchQuery] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
@@ -35,13 +37,13 @@ export default function ManageUser() {
 
   // Fetch users on component mount or when pagination changes
   useEffect(() => {
-    fetchUsers(pagination.current, pagination.pageSize);
-  }, [pagination.current, pagination.pageSize]);
+    fetchUsers(searchQuery, pagination.current, pagination.pageSize);
+  }, [searchQuery, pagination.current, pagination.pageSize]);
 
   // Fetch users from API
-  const fetchUsers = async (page = 1, pageSize = 5) => {
+  const fetchUsers = async (search = "", page = 1, pageSize = 5) => {
     try {
-      const response = await getUsers(page - 1, pageSize); // API sử dụng page bắt đầu từ 0
+      const response = await getUsers(search, page - 1, pageSize); // API sử dụng page bắt đầu từ 0
       setUsers(response.data.content); // Gán danh sách người dùng
       setPagination((prev) => ({
         ...prev,
@@ -54,7 +56,10 @@ export default function ManageUser() {
       toast.error("Không thể tải danh sách người dùng!");
     }
   };
-
+  const handleSearch = () => {
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    fetchUsers(searchQuery, 1, pagination.pageSize);
+  };
   // Handle add user
   const handleAddUser = () => {
     setEditingUser(null);
@@ -74,7 +79,7 @@ export default function ManageUser() {
     try {
       await deleteUser(userId);
       toast.success("Xóa người dùng thành công!");
-      fetchUsers(pagination.current, pagination.pageSize);
+      fetchUsers("",pagination.current, pagination.pageSize);
     } catch (error) {
       console.error("Error deleting user:", error);
       toast.error("Không thể xóa người dùng!");
@@ -86,7 +91,7 @@ export default function ManageUser() {
     try {
       await restoreUser(userId);
       toast.success("Khôi phục người dùng thành công!");
-      fetchUsers(pagination.current, pagination.pageSize);
+      fetchUsers("",pagination.current, pagination.pageSize);
     } catch (error) {
       console.error("Error restoring user:", error);
       toast.error("Không thể khôi phục người dùng!");
@@ -107,7 +112,7 @@ export default function ManageUser() {
         toast.success("Thêm người dùng thành công!");
       }
       setIsModalVisible(false);
-      fetchUsers(pagination.current, pagination.pageSize);
+      fetchUsers("",pagination.current, pagination.pageSize);
     } catch (error) {
       console.error("Error saving user:", error);
       toast.error("Không thể lưu người dùng!");
@@ -193,6 +198,22 @@ export default function ManageUser() {
     <div>
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold mb-4">Quản lý người dùng</h1>
+         <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Tìm kiếm..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onPressEnter={handleSearch}
+                    style={{ width: 300 }}
+                  />
+                  <Button
+                    type="primary"
+                    icon={<SearchOutlined />}
+                    onClick={handleSearch}
+                  >
+                    Tìm
+                  </Button>
+                </div>
         <Button
           type="primary"
           onClick={handleAddUser}

@@ -8,8 +8,18 @@ export const getAllBrands = async () => {
   return response.data;
 };
 
-export const getBrands = async (page, size) => {
-    const response = await axiosPrivate.get(`/brands/admin/all?page=${page}&size=${size}`);
+export const getBrands = async (search="", page, size) => {
+  let response ;
+  if (search !== "") {
+     response = await axiosPrivate.get(
+      `/brands/admin/all?search=${search}&page=${page}&size=${size}`
+    )
+  }
+    else {
+     response = await axiosPrivate.get(
+       `/brands/admin/all?page=${page}&size=${size}`
+     );
+  }
     console.log("Response brand data:", response.data); // Log the response data
   return response.data;
 };
@@ -37,6 +47,6 @@ export const deleteBrand = async (brandId) => {
 };
 
 export const restoreBrand = async (brandId) => {
-  const response = await axiosPrivate.patch(`/brands/restore/${brandId}`);
+  const response = await axiosPrivate.patch(`/brands/${brandId}`);
   return response.data;
 };

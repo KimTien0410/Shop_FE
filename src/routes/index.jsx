@@ -26,6 +26,7 @@ import ManageUser from "../pages/admin/ManageUser";
 import ManageProduct from "../pages/admin/ManageProduct";
 import ManageOrder from "../pages/admin/ManageOrder";
 import ManageVoucher from "../pages/admin/ManageVoucher";
+import PageNotFound from "../pages/PageNotFound";
 
 
 
@@ -54,10 +55,11 @@ const router = createBrowserRouter(
         <Route index element={<Homepage />} />
         <Route path="products" element={<ProductListPage />} />
         <Route path="products/:productId" element={<ProductDetailPage />} />
+        <Route path="*" element={<PageNotFound />} />
       </Route>
       <Route path="login" element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
-      <Route path="*" element={<h1>Page not found</h1>} />
+      <Route path="*" element={<PageNotFound />} />
     </Route>
   )
 );

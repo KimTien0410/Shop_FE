@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, message, Popconfirm } from "antd";
 import {
-  PlusOutlined,EditOutlined,
+  PlusOutlined,
+  EditOutlined,
   DeleteOutlined,
   UndoOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 
 import {
@@ -19,22 +21,31 @@ export default function ManageCategory() {
   const [categories, setCategories] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  // const [searchQuery, setSearchQuery] = useState("");
+    const [pagination, setPagination] = useState({
+      current: 1,
+      pageSize: 5,
+      total: 0,
+    });
   const [form] = Form.useForm();
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    fetchCategories(pagination.current, pagination.pageSize);
+  }, [pagination.current, pagination.pageSize]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (page, size) => {
     try {
-      const response = await getAllCategoriesByAdmin();
+      const response = await getAllCategoriesByAdmin(page, size);
       setCategories(response.content);
     } catch (error) {
       console.error("Error fetching categories:", error);
       message.error("Không thể tải danh mục!");
     }
   };
-
+  // const handleSearch = () => {
+  //   setPagination((prev) => ({ ...prev, current: 1 }));
+  //   fetchCategories(1, pagination.pageSize);
+  // };
   const handleAddCategory = () => {
     setEditingCategory(null);
     form.resetFields();
@@ -93,7 +104,7 @@ export default function ManageCategory() {
       toast.error("Không thể lưu danh mục!");
     }
   };
-
+  
 
   const columns = [
     {
@@ -166,14 +177,22 @@ export default function ManageCategory() {
     <div>
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold mb-4">Quản lý danh mục</h1>
-        {/* <Button
-          type="primary"
-          onClick={handleAddCategory}
-          className="mb-4"
-          icon={<PlusOutlined />}
-        >
-          Thêm
-        </Button> */}
+        {/* <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Tìm kiếm..."
+                    // value={searchQuery}
+                    // onChange={(e) => setSearchQuery(e.target.value)}
+                    onPressEnter={handleSearch}
+                    style={{ width: 300 }}
+                  />
+                  <Button
+                    type="primary"
+                    icon={<SearchOutlined />}
+                    onClick={handleSearch}
+                  >
+                    Tìm
+                  </Button>
+                </div> */}
         <Button
           type="primary"
           onClick={handleAddCategory}

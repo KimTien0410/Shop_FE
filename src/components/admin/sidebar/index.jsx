@@ -53,9 +53,7 @@ export default function SidebarAdmin() {
 
   return (
     <div className="w-64 h-screen bg-white shadow-md">
-      <div className="p-4 text-xl font-bold text-center text-blue-600">
-        {/* Admin Panel */}
-      </div>
+      
       <Menu
         mode="inline"
         defaultSelectedKeys={["/admin/statistic"]}

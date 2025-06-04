@@ -1,33 +1,55 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Descriptions, Tag, message } from "antd";
+import {
+  Button,
+  Modal,
+  Descriptions,
+  Tag,
+  message,
+  Pagination,
+  Tabs,
+} from "antd";
 import { cancelOrder, getOrderHistory } from "../../services/orderService";
 import { toast } from "react-toastify";
 import { useLocation } from "react-router-dom";
-
+import { Rate, Input } from "antd";
+import { submitReview } from "../../services/reviewService";
 export default function OrderHistoryPage() {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const location = useLocation();
-  // useEffect(() => {
-  //   const params = new URLSearchParams(location.search);
-  //   if (params.get("status") === "PAID") {
-  //     toast.success("Thanh toán thành công!", { autoClose: 3000 });
-  //   }
-  // }, [location.search]);
-  // useEffect(() => {
-  //   const params = new URLSearchParams(location.search);
-  //   if (params.get("status") === "PAID") {
-  //     toast.success("Thanh toán thành công!");
-  //   }
-  //   if (
-  //     params.get("cancel") === "true" &&
-  //     params.get("status") === "CANCELLED"
-  //   ) {
+  const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
+  const [reviewProduct, setReviewProduct] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("PENDING");
 
-  //     toast.success("Hủy đơn hàng thành công!");
-  //   }
-  // }, [location.search]);
+  const pageSize = 4; // Số đơn hàng mỗi trang
+  const location = useLocation();
+  const ORDER_TABS = [
+    { key: "PENDING", label: "Đang chờ xử lý" },
+    { key: "IN_PROGRESS", label: "Đang xử lý" },
+    { key: "SHIPPED", label: "Đang giao hàng" },
+    { key: "DELIVERED", label: "Đã giao" },
+    { key: "CANCELLED", label: "Đã hủy" },
+  ];
+
+  
+  const filteredOrders =
+    activeTab === "ALL"
+      ? orders
+      : orders.filter((order) => order.orderStatus === activeTab);
+
+  const pagedOrders = filteredOrders.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  // Tính toán dữ liệu phân trang
+  // const pagedOrders = orders.slice(
+  //   (currentPage - 1) * pageSize,
+  //   currentPage * pageSize
+  // );
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const orderCode = params.get("orderCode");
@@ -50,7 +72,7 @@ export default function OrderHistoryPage() {
       toast.success("Thanh toán thành công!", { autoClose: 3000 });
     }
   }, [location.search]);
-  
+
   useEffect(() => {
     fetchOrderHistory();
   }, []);
@@ -81,98 +103,179 @@ export default function OrderHistoryPage() {
     setSelectedOrder(order); // Lưu thông tin đơn hàng được chọn
     setIsModalVisible(true); // Hiển thị modal chi tiết đơn hàng
   };
+  const onOk = async () => {
+    try {
+      const form = new FormData();
+      form.append("productId", reviewProduct.productId);
+      form.append("reviewRating", reviewRating);
+      form.append("reviewComment", reviewComment);
+      await submitReview(form);
+      toast.success("Đánh giá thành công!");
+      setIsReviewModalVisible(false);
+    } catch {
+      toast.error("Gửi đánh giá thất bại!");
+    }
+  };
 
-  const columns = [
-    {
-      title: "Mã đơn hàng",
-      dataIndex: "orderId",
-      key: "orderId",
-    },
-    {
-      title: "Ngày đặt hàng",
-      dataIndex: "orderDate",
-      key: "orderDate",
-      render: (text) => new Date(text).toLocaleString(), // Format ngày
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "orderStatus",
-      key: "orderStatus",
-      render: (status) => {
-        let color = "";
-        let text = "";
-    
-        switch (status) {
-          case "PENDING":
-            color = "blue";
-            text = "Đang chờ xử lý";
-            break;
-          case "IN_PROGRESS":
-            color = "orange";
-            text = "Đang xử lý";
-            break;
-          case "SHIPPED":
-            color = "purple";
-            text = "Đang giao hàng";
-            break;
-          case "DELIVERED":
-            color = "green";
-            text = "Đã giao";
-            break;
-          case "CANCELLED":
-            color = "red";
-            text = "Đã hủy";
-            break;
-          default:
-            color = "default";
-            text = "Không xác định";
-        }
-    
-        return <Tag color={color}>{text}</Tag>;
-      }
-    },
-    {
-      title: "Tổng tiền",
-      dataIndex: "finalPrice",
-      key: "finalPrice",
-      render: (price) => `${price.toLocaleString()} VND`,
-    },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_, record) => (
-        <div className="flex gap-2">
-          <Button type="link" onClick={() => handleViewOrderDetails(record)}>
-            Xem chi tiết
-          </Button>
-          {record.orderStatus === "PENDING" && (
-            <Button
-              type="link"
-              danger
-              onClick={() => handleCancelOrder(record.orderId)}
-            >
-              Hủy đơn hàng
-            </Button>
-          )}
-        </div>
-      ),
-    },
-  ];
-
+  // Helper để render trạng thái đơn hàng
+  const renderStatus = (status) => {
+    let color = "";
+    let text = "";
+    switch (status) {
+      case "PENDING":
+        color = "blue";
+        text = "Đang chờ xử lý";
+        break;
+      case "IN_PROGRESS":
+        color = "orange";
+        text = "Đang xử lý";
+        break;
+      case "SHIPPED":
+        color = "purple";
+        text = "Đang giao hàng";
+        break;
+      case "DELIVERED":
+        color = "green";
+        text = "Đã giao";
+        break;
+      case "CANCELLED":
+        color = "red";
+        text = "Đã hủy";
+        break;
+      default:
+        color = "default";
+        text = "Không xác định";
+    }
+    return <Tag color={color}>{text}</Tag>;
+  };
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="min-h-screen max-w-6xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6 text-center">Lịch sử đơn hàng</h1>
-      <Table
-        columns={columns}
-        dataSource={orders}
-        rowKey="orderId"
-        pagination={{ pageSize: 5 }}
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => {
+          setActiveTab(key);
+          setCurrentPage(1); // reset về trang 1 khi đổi tab
+        }}
+        items={ORDER_TABS.map((tab) => ({
+          key: tab.key,
+          label: tab.label,
+        }))}
+        className="mb-6"
       />
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+        {pagedOrders.length === 0 && (
+          <div className="col-span-2 text-center text-gray-500">
+            Không có đơn hàng nào.
+          </div>
+        )}
+        {pagedOrders.map((order) => (
+          <div
+            key={order.orderId}
+            className="bg-white rounded-xl shadow p-5 flex flex-col gap-3 border"
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <span className="font-semibold">Mã đơn hàng:</span>{" "}
+                {order.orderId}
+                {/* {renderStatus(order.orderStatus)} */}
+              </div>
 
+              {/* {renderStatus(order.orderStatus)} */}
+              <div className="flex gap-2">
+                <Button
+                  type="link"
+                  onClick={() => handleViewOrderDetails(order)}
+                >
+                  Xem chi tiết
+                </Button>
+                {order.orderStatus === "PENDING" && (
+                  <Button
+                    type="link"
+                    danger
+                    onClick={() => handleCancelOrder(order.orderId)}
+                  >
+                    Hủy đơn hàng
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div>
+              <span className="font-semibold">Ngày đặt:</span>{" "}
+              {new Date(order.orderDate).toLocaleString()}
+            </div>
+            <div>
+              <span className="font-semibold">Sản phẩm:</span>
+              <div className="divide-y mt-2">
+                {order.orderDetails.map((item) => (
+                  <div
+                    key={item.orderDetailId}
+                    className="flex items-center gap-3 py-2"
+                  >
+                    <img
+                      src={item.productImage}
+                      alt={item.productName}
+                      className="w-14 h-14 object-cover rounded border"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium">{item.productName}</div>
+                      <div className="text-sm text-gray-500">
+                        Màu: {item.color} | Size: {item.size}
+                      </div>
+                      <div className="text-sm">
+                        SL: {item.quantity} | Giá: {item.price.toLocaleString()}{" "}
+                        VND
+                      </div>
+                    </div>
+                    {order.orderStatus === "DELIVERED" && (
+                      <Button
+                        type="primary"
+                        size="small"
+                        onClick={() => {
+                          setReviewProduct(item);
+                          setIsReviewModalVisible(true);
+                          setReviewRating(5);
+                          setReviewComment("");
+                        }}
+                      >
+                        Đánh giá
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="font-semibold">Phí vận chuyển:</span>{" "}
+              {order.shippingFee.toLocaleString()} VND
+            </div>
+            <div>
+              <span className="font-semibold">Giảm giá:</span>{" "}
+              {order.discountPrice.toLocaleString()} VND
+            </div>
+            <div>
+              <span className="font-semibold">Tổng tiền:</span>{" "}
+              <span className="text-red-500 font-bold">
+                {order.finalPrice.toLocaleString()} VND
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* <div className="flex justify-center mt-8">
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={orders.length}
+          onChange={setCurrentPage}
+          showSizeChanger={false}
+        />
+      </div> */}
       {/* Modal chi tiết đơn hàng */}
       <Modal
         title="Chi tiết đơn hàng"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
@@ -186,9 +289,7 @@ export default function OrderHistoryPage() {
                 {new Date(selectedOrder.orderDate).toLocaleString()}
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái">
-                {selectedOrder.orderStatus === "PENDING"
-                  ? "Đang chờ xử lý"
-                  : "Đã giao"}
+                {renderStatus(selectedOrder.orderStatus)}
               </Descriptions.Item>
               <Descriptions.Item label="Phương thức thanh toán">
                 {selectedOrder.paymentMethodName}
@@ -212,7 +313,6 @@ export default function OrderHistoryPage() {
                 {selectedOrder.finalPrice.toLocaleString()} VND
               </Descriptions.Item>
             </Descriptions>
-
             <h3 className="text-lg font-semibold mt-4">Sản phẩm</h3>
             {selectedOrder.orderDetails.map((item) => (
               <div
@@ -231,11 +331,50 @@ export default function OrderHistoryPage() {
                   </p>
                   <p>Số lượng: {item.quantity}</p>
                   <p>Giá: {item.price.toLocaleString()} VND</p>
+                  {selectedOrder.orderStatus === "DELIVERED" && (
+                    <Button
+                      type="primary"
+                      size="small"
+                      className="mt-2"
+                      onClick={() => {
+                        setReviewProduct(item);
+                        setIsReviewModalVisible(true);
+                        setReviewRating(5);
+                        setReviewComment("");
+                      }}
+                    >
+                      Đánh giá
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
+      </Modal>
+      {/* Modal đánh giá sản phẩm */}
+      <Modal
+        title={`Đánh giá sản phẩm${
+          reviewProduct ? `: ${reviewProduct.productName}` : ""
+        }`}
+        open={isReviewModalVisible}
+        onCancel={() => setIsReviewModalVisible(false)}
+        onOk={onOk}
+        okText="Gửi đánh giá"
+      >
+        <div className="mb-3">
+          <span className="font-medium">Chọn số sao:</span>
+          <Rate value={reviewRating} onChange={setReviewRating} />
+        </div>
+        <div>
+          <span className="font-medium">Nội dung đánh giá:</span>
+          <Input.TextArea
+            rows={4}
+            value={reviewComment}
+            onChange={(e) => setReviewComment(e.target.value)}
+            placeholder="Nhập nội dung đánh giá..."
+          />
+        </div>
       </Modal>
     </div>
   );
