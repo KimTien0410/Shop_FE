@@ -178,7 +178,7 @@ export default function ProductDetailPage() {
             <img
               src={mainImage}
               alt={product.productName}
-              className="w-full h-96  bg-white"
+              className="w-full h-full object-cover bg-white"
             />
           </div>
           <div className="flex gap-2 mt-2">
@@ -367,7 +367,6 @@ export default function ProductDetailPage() {
                 },
               ]}
             />
-            
           </div>
         </div>
       </div>
